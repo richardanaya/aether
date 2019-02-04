@@ -1,5 +1,5 @@
 build:
-	cd compiler && node generate.js && cp compiler.wasm ../cli/src/compiler.wasm
-	cd cli && cargo build --release
-	cp cli/target/release/aether aether
+	cd compiler && node generate.js && cp compiler.wasm ../src/compiler.wasm
+	cargo build --release
+	cp target/release/aether aether
 	./aether examples/helloworld/helloworld.b examples/helloworld/helloworld.wasm
