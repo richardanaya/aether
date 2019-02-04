@@ -1,0 +1,12 @@
+<script>
+  fetch("cli/src/compiler.wasm")
+    .then(response => response.arrayBuffer())
+    .then(bytes => {
+      return WebAssembly.instantiate(bytes);
+    })
+    .then(results => {
+      let m = results.instance.exports;
+      m.main(4);
+      debugger;
+    });
+</script>

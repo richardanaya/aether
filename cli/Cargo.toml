@@ -1,0 +1,11 @@
+[package]
+name = "aether"
+version = "0.0.1"
+authors = ["Richard Anaya"]
+edition = "2018"
+license = "MIT"
+description = "a native web assembly programming language"
+
+[dependencies]
+wasmi = "0.4"
+parity-wasm = "0.31"
