@@ -35,8 +35,11 @@ fn main() -> io::Result<()> {
     // put code text at start of memory
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
+        // set first u32 as the length of the text
         m.set_value(0,buffer.len() as u32).unwrap();
-        m.set(6, &buffer).unwrap();
+        // set mem[4] = 0 representing not free
+        // set code text in memory starting at mem[5]
+        m.set(5, &buffer).unwrap();
     }
 
     // call main
