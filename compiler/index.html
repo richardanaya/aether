@@ -1,5 +1,5 @@
 <script>
-  fetch("cli/src/compiler.wasm")
+  fetch("cli/src/out.wasm")
     .then(response => response.arrayBuffer())
     .then(bytes => {
       return WebAssembly.instantiate(bytes);
