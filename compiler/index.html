@@ -8,7 +8,6 @@
           log: m => {
             let s = "";
             let i = m;
-            debugger;
             while (memory[i]) {
               s += String.fromCharCode(memory[i]);
               i++;
@@ -23,7 +22,10 @@
       memory = new Uint8Array(m.memory.buffer);
       let s = "hello";
       let s_start = m.malloc(s.length);
-      //m.memcopy(0, 9000, 7);
+      for (var i = 0; i < s.length; i++) {
+        memory[s_start + i] = s.charCodeAt(i);
+      }
+      m.main(s_start);
       debugger;
     });
 </script>

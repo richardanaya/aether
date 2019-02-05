@@ -1,0 +1,27 @@
+//lexer
+// we want to make  vector of struct LexPair[i32,string]
+// we will iterate over this in the compilation step
+x0 = len(file)
+x1 = vec(1000)
+x2 = 0
+loop:
+// if we looked at last character
+if x2 == p0
+break
+end
+x3 = mem[x2]
+x4 = str() //create empty String
+x5 = 0 // type is currently just IDENTIFIER
+
+//iterate over strings
+
+//x6 = {IDENTIFIER,x3}
+x6 = array(2)
+mem[x6] = x5 //
+mem[x6+4] = x4
+array_set(x1,0)
+//x0.push()
+vec_push(x1,x6)
+end
+
+//at the end of this all x0 should contain a vector of lex pairs
