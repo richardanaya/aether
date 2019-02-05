@@ -38,7 +38,6 @@ fn main() -> io::Result<()> {
         _ => panic!("not sure why i got this")
     };
 
-    println!("{:?}",input_start);
     // put code text at start of memory
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
@@ -51,13 +50,11 @@ fn main() -> io::Result<()> {
         RuntimeValue::I32(i) => i,
         _ => panic!("not sure why i got this")
     };
-    println!("{:?}",output_start);
 
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
         // read how long our wasm binary is
         let length: u32 = m.get_value((output_start-5) as u32).unwrap();
-        println!("{:?}",length);
         // get the wasm binary
         let output_bytes = m.get(output_start as u32, length as usize).unwrap();
         // write to file
