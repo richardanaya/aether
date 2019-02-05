@@ -1,11 +1,10 @@
 var fs = require('fs');
-let seed = require("@richardanaya/seed");
 let {flatten,str,vec,bytevec,int,uint,I32,FUNC,DESC_FUNCTION,END,I32_CONST,SECTION_TYPE,
   SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,DESC_MEMORY,
   SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
   LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,
   SECTION_IMPORT,THEN,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,DESC_GLOBAL,SECTION_DATA,
-  CALL} = seed;
+  CALL} = require("wasmly");
 
 // main(file_start:i32) -> wasm_start:i32
 let main_code = bytevec([
@@ -22,22 +21,22 @@ let malloc_code = bytevec([
     [1, I32] // current_heap:i32
   ]),
   // current_heap = global.heap
-  GLOBAL_GET, int(0),
-  LOCAL_SET,  int(1),
+  GLOBAL_GET, 0,
+  LOCAL_SET,  1,
   // memorycurrent_heap = length
-  GLOBAL_GET, int(0),
-  LOCAL_GET,  int(0),
-  I32_STORE,  int(0), int(0),
+  GLOBAL_GET, 0,
+  LOCAL_GET,  0,
+  I32_STORE,  0, 0,
   // global.heap = current_heap + 1 + length
-  LOCAL_GET,  int(1),
-  I32_CONST,  int(1),
+  LOCAL_GET,  1,
+  I32_CONST,  1,
   I32_ADD,
-  LOCAL_GET,  int(0),
+  LOCAL_GET,  0,
   I32_ADD,
-  GLOBAL_SET, int(0),
+  GLOBAL_SET, 0,
   // return current_heap + 1
-  LOCAL_GET,  int(1),
-  I32_CONST,  int(5),
+  LOCAL_GET,  1,
+  I32_CONST,  5,
   I32_ADD,
   END
 ])
