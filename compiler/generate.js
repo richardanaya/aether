@@ -2,61 +2,86 @@ var fs = require('fs');
 let seed = require("@richardanaya/seed");
 let {flatten,str,vec,bytevec,int,uint,I32,FUNC,EXPORT_FUNCTION,END,I32_CONST,SECTION_TYPE,
   SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,EXPORT_MEMORY,
-  SECTION_MEMORY,LIMIT_MIN_MAX,I32_STORE,I32_STORE8,SECTION_DATA} = seed;
+  SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
+  LOCAL_SET,LOCAL_GET,I32_STORE,I32_ADD,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
 
-let code_data_start = 10000;
-let code_total_bytes_idx = 44;
-let compiled_start = [0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,5,4,1,1,2,10,7,17,2,4,109,97,105,110,0,0,6,109,101,109,111,114,121,2,0,10,6,1]
-let code_data = [uint(0),I32_CONST,int(code_data_start),END,bytevec(compiled_start)]
-
-// main() -> i32 { return 42 }
-let main_function_index = 0
-let main_export = [str("main"),EXPORT_FUNCTION,main_function_index]
-let main_function_signature = [FUNC,vec([]),vec([])] // function signature returns 42
-let main_function_code = bytevec([
-  vec([
-    [10, I32] // 10 local variables to use x0..x9
-  ]),
-  I32_CONST, int(0),
-  I32_CONST, int(44),
-  I32_STORE8, int(0), int(0),
+// main(file_start:i32) -> wasm_start:i32
+let main_sig = [FUNC,vec([I32]),vec([I32])]
+let main_code = bytevec([
+  vec([]),
+  [I32_CONST,  int(1)],
   END
 ])
 
-//lets make memory at least 2 pages and at most 10 pages long
-let memory = [LIMIT_MIN_MAX,uint(2),uint(10)]
-// export our memory as "memory" so host can read/modify
-let memory_export = [str("memory"),EXPORT_MEMORY,0]
+// malloc(length:i32) -> i32
+let malloc_sig = [FUNC,vec([I32]),vec([I32])]
+let malloc_code = bytevec([
+  vec([
+    [1, I32] // current_heap:i32
+  ]),
+  // current_heap = global.heap
+  [GLOBAL_GET, int(0)],
+  [LOCAL_SET,  int(1)],
+  // memory[current_heap] = length
+  [GLOBAL_GET, int(0)],
+  [LOCAL_GET,  int(0)],
+  [I32_STORE,  int(0), int(0)],
+  // global.heap = current_heap + 1 + length
+  [LOCAL_GET,  int(1)],
+  [I32_CONST,  int(1)],
+  [I32_ADD],
+  [LOCAL_GET,  int(0)],
+  [I32_ADD],
+  [GLOBAL_SET, int(0)],
+  // return current_heap + 5 (leave a space for free flag)
+  [LOCAL_GET,  int(1)],
+  [I32_CONST,  int(5)],
+  [I32_ADD],
+  END
+])
 
-// function signatures go in this section
-let type_section = [SECTION_TYPE,bytevec(vec([main_function_signature]))];
+// memcopy(destation:i32,source:i32,length:i32)
+let memcopy_sig = [FUNC,vec([I32,I32,I32]),vec([])]
+let memcopy_code = bytevec([
+  vec([
+    [1, I32] // i:i32
+  ]),
+  END
+])
 
-// we only have one function (main), and its going to use the first type
-let functions_section = [SECTION_FUNCTION,bytevec(vec([int(main_function_index)]))];
-
-let memory_section = [SECTION_MEMORY,bytevec(vec([memory]))]
-
-let export_section = [SECTION_EXPORT,bytevec(vec([main_export,memory_export]))]
-
-// we only have our main function code
-let code_section = [SECTION_CODE,bytevec(vec([main_function_code]))]
-
-let data_section = [SECTION_DATA,bytevec(vec([code_data]))]
-
-// put it all together as a module
 let app = [
   MAGIC_NUMBER,
   VERSION_1,
-  type_section,
-  functions_section,
-  memory_section,
-  export_section,
-  code_section,
-  data_section
+  [SECTION_TYPE,bytevec(vec([
+    main_sig,
+    malloc_sig,
+    memcopy_sig
+  ]))],
+  [SECTION_FUNCTION,bytevec(vec([
+    int(0),
+    int(1),
+    int(2)
+  ]))],
+  [SECTION_MEMORY,bytevec(vec([
+    [LIMIT_MIN_MAX,uint(2),uint(10)]
+  ]))],
+  [SECTION_GLOBAL,bytevec(vec([[I32,MUTABLE,I32_CONST, int(0),END]]))],
+  [SECTION_EXPORT,bytevec(vec([
+    [str("main"),EXPORT_FUNCTION,0],
+    [str("malloc"),EXPORT_FUNCTION,1],
+    [str("memcopy"),EXPORT_FUNCTION,2],
+    [str("memory"),EXPORT_MEMORY,0],
+    [str("heap"),EXPORT_GLOBAL,0]
+  ]))],
+  [SECTION_CODE,bytevec(vec([
+    main_code,
+    malloc_code,
+    memcopy_code,
+  ]))],
+  [SECTION_DATA,bytevec(vec([
+    [uint(0),I32_CONST,int(9000),END,str("goodbye")],
+    [uint(0),I32_CONST,int(10000),END,bytevec([])]
+  ]))]
 ]
 
-// print it out for debugging
-console.log(JSON.stringify(flatten(app)));
-
-// write it to test.wasm
 fs.writeFileSync('compiler.wasm',Buffer.from(flatten(app)))
