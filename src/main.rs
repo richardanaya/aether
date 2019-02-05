@@ -32,13 +32,14 @@ fn main() -> io::Result<()> {
         .run_start(&mut NopExternals)
         .expect("Failed to run start function in module");
 
+    // call malloc to get a place to put our input
     let input_start = match main.invoke_export("malloc", &vec![RuntimeValue::I32(buffer.len() as i32)], &mut NopExternals)
         .expect("").unwrap() {
         RuntimeValue::I32(i) => i,
         _ => panic!("not sure why i got this")
     };
 
-    // put code text at start of memory
+    // put code text at start of memory from malloc
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
         m.set(input_start as u32, &buffer).unwrap();
