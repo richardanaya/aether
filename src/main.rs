@@ -4,7 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
-use wasmi::{ExternVal, ImportsBuilder, MemoryInstance, ModuleInstance, NopExternals};
+use wasmi::{ExternVal, ImportsBuilder, MemoryInstance, ModuleInstance, NopExternals,RuntimeValue};
 
 fn main() -> io::Result<()> {
     // include the bytes of our compiler
@@ -32,26 +32,31 @@ fn main() -> io::Result<()> {
         .run_start(&mut NopExternals)
         .expect("Failed to run start function in module");
 
+    let input_start = match main.invoke_export("malloc", &vec![RuntimeValue::I32(buffer.len() as i32)], &mut NopExternals)
+        .expect("").unwrap() {
+        RuntimeValue::I32(i) => i,
+        _ => panic!("not sure why i got this")
+    };
+
     // put code text at start of memory
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
-        // set first u32 as the length of the text
-        m.set_value(0,buffer.len() as u32).unwrap();
-        // set mem[4] = 0 representing not free
-        // set code text in memory starting at mem[5]
-        m.set(5, &buffer).unwrap();
+        m.set(input_start as u32, &buffer).unwrap();
     }
 
     // call main
-    main.invoke_export("main", &vec![], &mut NopExternals)
-        .expect("");
+    let output_start = match main.invoke_export("main", &vec![RuntimeValue::I32(input_start)], &mut NopExternals)
+        .expect("").unwrap() {
+        RuntimeValue::I32(i) => i,
+        _ => panic!("not sure why i got this")
+    };
 
     if let Some(ExternVal::Memory(i)) = main.export_by_name("memory") {
         let m: &MemoryInstance = &i;
         // read how long our wasm binary is
-        let length: u32 = m.get_value(0).unwrap();
+        let length: u32 = m.get_value((output_start-5) as u32).unwrap();
         // get the wasm binary
-        let output_bytes = m.get(4, length as usize).unwrap();
+        let output_bytes = m.get(output_start as u32, length as usize).unwrap();
         // write to file
         let mut buffer = File::create(output)?;
         buffer.write(&output_bytes)?;
