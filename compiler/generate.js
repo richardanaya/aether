@@ -99,9 +99,9 @@ let app = [
     [I32,MUTABLE,I32_CONST, int(0),END]
   ])),
   SECTION_EXPORT,bytevec(vec([
-    [str("main"),DESC_FUNCTION,0],
-    [str("malloc"),DESC_FUNCTION,1],
-    [str("memcopy"),DESC_FUNCTION,2],
+    [str("main"),DESC_FUNCTION,1],
+    [str("malloc"),DESC_FUNCTION,2],
+    [str("memcopy"),DESC_FUNCTION,3],
     [str("memory"),DESC_MEMORY,0]
   ])),
   SECTION_CODE,bytevec(vec([
