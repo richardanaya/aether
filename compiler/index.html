@@ -1,14 +1,28 @@
 <script>
+  let memory = null;
   fetch("compiler.wasm")
     .then(response => response.arrayBuffer())
     .then(bytes => {
-      return WebAssembly.instantiate(bytes);
+      return WebAssembly.instantiate(bytes, {
+        env: {
+          log: m => {
+            let s = "";
+            let i = m;
+            debugger;
+            while (memory[i]) {
+              s += String.fromCharCode(memory[i]);
+              i++;
+            }
+            console.log(s);
+          }
+        }
+      });
     })
     .then(results => {
       let m = results.instance.exports;
+      memory = new Uint8Array(m.memory.buffer);
       let s = "hello";
       let s_start = m.malloc(s.length);
-      let mem = new Uint8Array(m.memory.buffer);
       //m.memcopy(0, 9000, 7);
       debugger;
     });

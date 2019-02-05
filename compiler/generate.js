@@ -1,13 +1,17 @@
 var fs = require('fs');
 let seed = require("@richardanaya/seed");
-let {flatten,str,vec,bytevec,int,uint,I32,FUNC,EXPORT_FUNCTION,END,I32_CONST,SECTION_TYPE,
-  SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,EXPORT_MEMORY,
+let {flatten,str,vec,bytevec,int,uint,I32,FUNC,DESC_FUNCTION,END,I32_CONST,SECTION_TYPE,
+  SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,DESC_MEMORY,
   SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
-  LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,THEN,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
+  LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,
+  SECTION_IMPORT,THEN,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,DESC_GLOBAL,SECTION_DATA,
+  CALL} = seed;
 
 // main(file_start:i32) -> wasm_start:i32
 let main_code = bytevec([
   vec([]),
+  I32_CONST,  int(9000),
+  CALL,0,
   I32_CONST,  int(5),
   END
 ])
@@ -78,6 +82,10 @@ let app = [
   SECTION_TYPE,bytevec(vec([
     [FUNC,vec([I32]),vec([I32])],
     [FUNC,vec([I32,I32,I32]),vec([])],
+    [FUNC,vec([I32]),vec([])],
+  ])),
+  SECTION_IMPORT,bytevec(vec([
+    [str("env"),str("log"),DESC_FUNCTION,2],
   ])),
   SECTION_FUNCTION,bytevec(vec([
     int(0), //main
@@ -91,10 +99,10 @@ let app = [
     [I32,MUTABLE,I32_CONST, int(0),END]
   ])),
   SECTION_EXPORT,bytevec(vec([
-    [str("main"),EXPORT_FUNCTION,0],
-    [str("malloc"),EXPORT_FUNCTION,1],
-    [str("memcopy"),EXPORT_FUNCTION,2],
-    [str("memory"),EXPORT_MEMORY,0]
+    [str("main"),DESC_FUNCTION,0],
+    [str("malloc"),DESC_FUNCTION,1],
+    [str("memcopy"),DESC_FUNCTION,2],
+    [str("memory"),DESC_MEMORY,0]
   ])),
   SECTION_CODE,bytevec(vec([
     main_code,
