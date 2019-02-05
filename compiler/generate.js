@@ -3,7 +3,7 @@ let seed = require("@richardanaya/seed");
 let {flatten,str,vec,bytevec,int,uint,I32,FUNC,EXPORT_FUNCTION,END,I32_CONST,SECTION_TYPE,
   SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,EXPORT_MEMORY,
   SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
-  LOCAL_SET,LOCAL_GET,LOOP,EMPTY,BR,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
+  LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,THEN,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
 
 // main(file_start:i32) -> wasm_start:i32
 let main_code = bytevec([
@@ -43,9 +43,30 @@ let memcopy_code = bytevec([
   vec([
     [1, I32] // i:i32
   ]),
-  BLOCK, EMPTY,
+  BLOCK,EMPTY,
   LOOP, EMPTY,
-  BR, 1,
+    // if( i == length )
+    LOCAL_GET, 3,
+    LOCAL_GET, 2,
+    I32_EQ,
+    IF, EMPTY,
+      BR,2,
+    END,
+    // mem[destination+i] = mem[source+i]
+    LOCAL_GET, 3,
+    LOCAL_GET, 0,
+    I32_ADD,
+    LOCAL_GET, 3,
+    LOCAL_GET, 1,
+    I32_ADD,
+    I32_LOAD8_U, 0, 0,
+    I32_STORE8, 0, 0,
+    // i = i+1
+    LOCAL_GET, 3,
+    I32_CONST, 1,
+    I32_ADD,
+    LOCAL_SET, 3,
+    BR,0,
   END,
   END,
   END
