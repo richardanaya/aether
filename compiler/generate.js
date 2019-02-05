@@ -22,23 +22,23 @@ let malloc_code = bytevec([
     [1, I32] // current_heap:i32
   ]),
   // current_heap = global.heap
-  [GLOBAL_GET, int(0)],
-  [LOCAL_SET,  int(1)],
-  // memory[current_heap] = length
-  [GLOBAL_GET, int(0)],
-  [LOCAL_GET,  int(0)],
-  [I32_STORE,  int(0), int(0)],
+  GLOBAL_GET, int(0),
+  LOCAL_SET,  int(1),
+  // memorycurrent_heap = length
+  GLOBAL_GET, int(0),
+  LOCAL_GET,  int(0),
+  I32_STORE,  int(0), int(0),
   // global.heap = current_heap + 1 + length
-  [LOCAL_GET,  int(1)],
-  [I32_CONST,  int(1)],
-  [I32_ADD],
-  [LOCAL_GET,  int(0)],
-  [I32_ADD],
-  [GLOBAL_SET, int(0)],
+  LOCAL_GET,  int(1),
+  I32_CONST,  int(1),
+  I32_ADD,
+  LOCAL_GET,  int(0),
+  I32_ADD,
+  GLOBAL_SET, int(0),
   // return current_heap + 1
-  [LOCAL_GET,  int(1)],
-  [I32_CONST,  int(5)],
-  [I32_ADD],
+  LOCAL_GET,  int(1),
+  I32_CONST,  int(5),
+  I32_ADD,
   END
 ])
 
