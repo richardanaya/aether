@@ -2,6 +2,6 @@
   "name": "aethercompiler",
   "version": "1.0.0",
   "dependencies": {
-    "@richardanaya/seed": "0.0.5"
+    "@richardanaya/seed": "0.0.6"
   }
 }

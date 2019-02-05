@@ -3,7 +3,7 @@ let seed = require("@richardanaya/seed");
 let {flatten,str,vec,bytevec,int,uint,I32,FUNC,EXPORT_FUNCTION,END,I32_CONST,SECTION_TYPE,
   SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,EXPORT_MEMORY,
   SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
-  LOCAL_SET,LOCAL_GET,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
+  LOCAL_SET,LOCAL_GET,LOOP,EMPTY,BR,I32_STORE,I32_ADD,IMMUTABLE,GLOBAL_SET,EXPORT_GLOBAL,SECTION_DATA} = seed;
 
 // main(file_start:i32) -> wasm_start:i32
 let main_code = bytevec([
@@ -18,22 +18,22 @@ let malloc_code = bytevec([
     [1, I32] // current_heap:i32
   ]),
   // current_heap = global.heap
-  GLOBAL_GET, int(0),
-  LOCAL_SET,  int(1),
+  GLOBAL_GET, 0,
+  LOCAL_SET,  0,
   // memorycurrent_heap = length
-  GLOBAL_GET, int(0),
-  LOCAL_GET,  int(0),
-  I32_STORE,  int(0), int(0),
+  GLOBAL_GET, 0,
+  LOCAL_GET,  0,
+  I32_STORE,  0, 0,
   // global.heap = current_heap + 1 + length
-  LOCAL_GET,  int(1),
-  I32_CONST,  int(1),
+  LOCAL_GET,  1,
+  I32_CONST,  1,
   I32_ADD,
-  LOCAL_GET,  int(0),
+  LOCAL_GET,  0,
   I32_ADD,
-  GLOBAL_SET, int(0),
+  GLOBAL_SET, 0,
   // return current_heap + 5 (leave a space for free flag)
-  LOCAL_GET,  int(1),
-  I32_CONST,  int(5),
+  LOCAL_GET,  1,
+  I32_CONST,  5,
   I32_ADD,
   END
 ])
@@ -43,6 +43,11 @@ let memcopy_code = bytevec([
   vec([
     [1, I32] // i:i32
   ]),
+  BLOCK, EMPTY,
+  LOOP, EMPTY,
+  BR, 1,
+  END,
+  END,
   END
 ])
 
@@ -54,9 +59,9 @@ let app = [
     [FUNC,vec([I32,I32,I32]),vec([])],
   ])),
   SECTION_FUNCTION,bytevec(vec([
-    int(0),
-    int(0),
-    int(1)
+    int(0), //main
+    int(0), //malloc
+    int(1), //memcopy
   ])),
   SECTION_MEMORY,bytevec(vec([
     [LIMIT_MIN_MAX,uint(2),uint(10)]

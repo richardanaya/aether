@@ -1,2 +1,2 @@
 build:
-	node generate.js
+	@node generate.js
