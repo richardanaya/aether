@@ -1,0 +1,30 @@
+heap:i32
+
+malloc(length:i32) -> i32 {
+  current_heap:i32 = global.heap
+  memory[current_heap..current_heap+3] = length
+  global.heap = current_heap + 4 + length
+  return current_heap + 5
+}
+
+memcopy(destation:i32,source:i32,length:i32) {
+  i:i32 = 0
+  loop {
+    if( i == length ) {
+      break
+    }
+    mem[destination+i] = mem[source+i]
+    i++
+  }
+}
+
+array_new(length:i32,elem_size:i32) -> i32 {
+  m = malloc(4+length*size)
+  m[0..3] = length
+  return m
+}
+
+// returns a c-string ( ends with '/0')
+str_new(length:i32) -> i32 {
+  return array_new(length+1,1)
+}

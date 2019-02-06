@@ -44,18 +44,18 @@ let malloc_code = bytevec([
   // current_heap = global.heap
   GLOBAL_GET, 0,
   LOCAL_SET,  1,
-  // memorycurrent_heap = length
+  // memory[current_heap..current_heap+3] = length
   GLOBAL_GET, 0,
   LOCAL_GET,  0,
   I32_STORE,  0, 0,
-  // global.heap = current_heap + 1 + length
+  // global.heap = current_heap + 5 + length
   LOCAL_GET,  1,
-  I32_CONST,  1,
+  I32_CONST,  5,
   I32_ADD,
   LOCAL_GET,  0,
   I32_ADD,
   GLOBAL_SET, 0,
-  // return current_heap + 1
+  // return current_heap + 5
   LOCAL_GET,  1,
   I32_CONST,  5,
   I32_ADD,
@@ -68,6 +68,7 @@ let memcopy_code = bytevec([
   vec([
     [1, I32] // i:i32
   ]),
+  // loop
   BLOCK,EMPTY,
   LOOP, EMPTY,
     // if( i == length )
@@ -101,9 +102,9 @@ let memcopy_code = bytevec([
 // array_new(length:i32,elem_size:i32) -> reference:i32
 let array_new_code = bytevec([
   vec([
-    [1,I32]
+    [1,I32] // m:array
   ]),
-  // s = malloc(4+length*size)
+  // m = malloc(4+length*size)
   LOCAL_GET, 0,
   LOCAL_GET, 1,
   I32_MUL,
@@ -111,11 +112,11 @@ let array_new_code = bytevec([
   I32_ADD,
   CALL, MALLOC,
   LOCAL_SET,2,
-  // s[0..3] = length
+  // m[0..3] = length
   LOCAL_GET,2,
   LOCAL_GET,0,
   I32_STORE, 0, 0,
-  // return s
+  // return m
   LOCAL_GET,2,
   END
 ])
