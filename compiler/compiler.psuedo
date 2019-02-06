@@ -2,7 +2,7 @@ heap:i32
 
 malloc(length:i32) -> i32 {
   current_heap:i32 = global.heap
-  memory[current_heap..current_heap+3] = length
+  memory[current_heap+0..3] = length
   global.heap = current_heap + 4 + length
   return current_heap + 5
 }
