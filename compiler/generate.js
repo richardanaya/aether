@@ -2,8 +2,8 @@ var fs = require('fs');
 let {flatten,str,vec,bytevec,int,uint,I32,FUNC,DESC_FUNCTION,END,I32_CONST,SECTION_TYPE,
   SECTION_FUNCTION,SECTION_EXPORT,SECTION_CODE,MAGIC_NUMBER,VERSION_1,DESC_MEMORY,
   SECTION_MEMORY,LIMIT_MIN_MAX,SECTION_GLOBAL,MUTABLE,NOP,BLOCK,GLOBAL_GET,
-  LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,
-  SECTION_IMPORT,THEN,I32_STORE,I32_ADD,I32_MUL,raw,IMMUTABLE,GLOBAL_SET,DESC_GLOBAL,SECTION_DATA,
+  LOCAL_SET,LOCAL_GET,LOOP,I32_LOAD8_U,I32_LOAD,SET_LOCAL,I32_STORE8,EMPTY,BR,IF,I32_EQ,
+  SECTION_IMPORT,THEN,I32_STORE,I32_ADD,I32_MUL,I32_SUB,raw,IMMUTABLE,GLOBAL_SET,DESC_GLOBAL,SECTION_DATA,
   CALL} = require("wasmly");
 
 let LOG          = 0
@@ -17,6 +17,8 @@ let STR_CSTRING  = 7
 let PRINT        = 8
 let STR_GET_CHAR = 9
 let STR_FROM_RAW = 10
+let STR_LEN      = 11
+let STR_CONCAT   = 12
 
 // main(file_start:i32,file_len:i32) -> wasm_start:i32
 let main_code = bytevec([
@@ -28,8 +30,10 @@ let main_code = bytevec([
   LOCAL_GET, 1,
   CALL,      STR_FROM_RAW,
   LOCAL_SET, 2,
-  //print(s)
+  //print(concat(s,s))
   LOCAL_GET, 2,
+  LOCAL_GET, 2,
+  CALL, STR_CONCAT,
   CALL, PRINT,
   // eventually we return memory location of wasm, for now return 5
   I32_CONST, 5,
@@ -209,6 +213,55 @@ let str_from_raw = bytevec([
   END
 ])
 
+// str_len - returns length of string (not including /0)
+// str_len(s:str) -> i32
+let str_len = bytevec([
+  vec([]),
+  // return s[0..3]-1
+  LOCAL_GET, 0,
+  I32_LOAD,  0, 0,
+  I32_CONST, 1,
+  I32_SUB,
+  END
+])
+// str_concat - concats two strings and produces a new string
+// str_concat(s1:str,s2:str) -> str
+let str_concat = bytevec([
+  vec([
+    [1,I32] // new_string:str
+  ]),
+  // new_string = str_new(str_len(s1)+str_len(s2))
+  LOCAL_GET, 0,
+  CALL,      STR_LEN,
+  LOCAL_GET, 1,
+  CALL,      STR_LEN,
+  I32_ADD,
+  CALL,      STR_NEW,
+  LOCAL_SET, 2,
+  //memcopy(str_cstring(new_string),str_cstring(s1),str_len(s1))
+  LOCAL_GET, 2,
+  CALL,      STR_CSTRING,
+  LOCAL_GET, 0,
+  CALL,      STR_CSTRING,
+  LOCAL_GET, 0,
+  CALL,      STR_LEN,
+  CALL,      MEMCOPY,
+  //memcopy(str_cstring(new_string)+str_len(s1),str_cstring(s2),str_len(s2))
+  LOCAL_GET, 2,
+  CALL,      STR_CSTRING,
+  LOCAL_GET, 0,
+  CALL,      STR_LEN,
+  I32_ADD,
+  LOCAL_GET, 1,
+  CALL,      STR_CSTRING,
+  LOCAL_GET, 1,
+  CALL,      STR_LEN,
+  CALL,      MEMCOPY,
+  // return new_string
+  LOCAL_GET, 2,
+  END
+])
+
 let app = [
   MAGIC_NUMBER,
   VERSION_1,
@@ -232,6 +285,8 @@ let app = [
     int(2), //print
     int(3), //str_get_char
     int(3), //str_from_raw
+    int(0), //str_len
+    int(3), //str_concat
   ])),
   SECTION_MEMORY,bytevec(vec([
     [LIMIT_MIN_MAX,uint(2),uint(10)]
@@ -256,6 +311,8 @@ let app = [
     print,
     str_get_char,
     str_from_raw,
+    str_len,
+    str_concat,
   ])),
   SECTION_DATA,bytevec(vec([
     [uint(0),I32_CONST,int(9000),END,bytevec(raw("goodbye"))],
