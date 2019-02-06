@@ -112,7 +112,7 @@ fn main() -> io::Result<()> {
     }
 
     // call main
-    let output_start = match main.invoke_export("main", &vec![RuntimeValue::I32(input_start)], &mut externals)
+    let output_start = match main.invoke_export("main", &vec![RuntimeValue::I32(input_start),RuntimeValue::I32(buffer.len() as i32)], &mut externals)
         .expect("").unwrap() {
         RuntimeValue::I32(i) => i,
         _ => panic!("not sure why i got this")

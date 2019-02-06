@@ -1,3 +1,5 @@
+log(i32)
+
 heap:i32
 
 malloc(length:i32) -> i32 {
