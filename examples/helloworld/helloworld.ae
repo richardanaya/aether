@@ -1,13 +1,5 @@
-memory[0] = 12
-memory[1] = 72
-memory[2] = 101
-memory[3] = 108
-memory[4] = 108
-memory[5] = 111
-memory[6] = 32
-memory[7] = 87
-memory[8] = 111
-memory[9] = 114
-memory[10] = 108
-memory[11] = 100
-memory[12] = 33
+app = flatten(app);
+
+function main(){
+  mem[0] = x0[0]
+}
